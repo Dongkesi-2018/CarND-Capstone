@@ -12,12 +12,12 @@ class Controller(object):
     def __init__(self, vehicle_mass, fuel_capacity, brake_deadband, decel_limit, 
         accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):
         # TODO: Implement
-        self.yaw_controlloer = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
+        self.yaw_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
 
         # TODO: this parameters are not tested!!!
         kp = 0.3
         ki = 0.1
-        kd = 0.
+        kd = 0.0
         mn = 0.   # Minimum throttle value
         mx = 0.2  # Maximum throttle value
         self.throttle_controller = PID(kp, ki, kd, mn, mx)
@@ -50,7 +50,7 @@ class Controller(object):
         rospy.logwarn("Current velocity: {0}".format(current_vel))
         rospy.logwarn("Filtered velocity: {0}".format(self.vel_lpf.get()))
 
-        steering = self.yaw_controlloer.get_steering(linear_vel, angular_vel, current_vel)
+        steering = self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
 
         vel_error = linear_vel - current_vel
         self.last_vel = current_vel
@@ -72,4 +72,4 @@ class Controller(object):
 
         return throttle, brake, steering
 
-        return 1., 0., 0.
+        # return 1., 0., 0.
