@@ -3,12 +3,20 @@ import tensorflow as tf
 import datetime
 import numpy as np
 import rospy
+import yaml
 
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
+        traffic_light_config= yaml.load(rospy.get_param("/traffic_light_config"))
+        stop_line_positions = traffic_light_config['stop_line_positions']
+        is_sim = True if len(stop_line_positions) > 2 else False
+        rospy.loginfo("is_sim: {0}".format(is_sim))
+        if is_sim:
+            model_path = r'light_classification/sim_model.pb'
+        else:
+            model_path = r'light_classification/site_model.pb'
 
-        model_path = r'light_classification/sim_model.pb'
         self.graph = tf.Graph()
         with self.graph.as_default():
             graph_def = tf.GraphDef()
