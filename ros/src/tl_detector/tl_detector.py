@@ -38,7 +38,7 @@ class TLDetector(object):
         self.bridge = CvBridge()
         self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
-        
+
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
@@ -82,31 +82,36 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
+        every_image = 3
         self.image_count += 1
 
         distance = self.check_traffic_lights_distance()
         rospy.loginfo("light-car distance: {0}, {1}, {2}".format(distance, self.has_image, self.image_count))
-        if distance < 200 and self.image_count % 3 == 0:
+        
+        if distance < 200 and self.image_count % every_image == 0:
             self.has_image = True
             self.camera_image = msg
-            light_wp, state = self.process_traffic_lights()
-            '''
-            Publish upcoming red lights at camera frequency.
-            Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
-            of times till we start using it. Otherwise the previous stable state is
-            used.
-            '''
-            if self.state != state:
-                self.state_count = 0
-                self.state = state
-            elif self.state_count >= STATE_COUNT_THRESHOLD:
-                self.last_state = self.state
-                light_wp = light_wp if state == TrafficLight.RED else -1
-                self.last_wp = light_wp
-                self.upcoming_red_light_pub.publish(Int32(light_wp))
-            else:
-                self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-            self.state_count += 1
+
+
+        light_wp, state = self.process_traffic_lights(distance)
+        '''
+        Publish upcoming red lights at camera frequency.
+        Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
+        of times till we start using it. Otherwise the previous stable state is
+        used.
+        '''
+        if self.state != state:
+            self.state_count = 0
+            self.state = state
+        elif self.state_count >= STATE_COUNT_THRESHOLD:
+            self.last_state = self.state
+            light_wp = light_wp if state == TrafficLight.RED else -1
+            self.last_wp = light_wp
+            self.upcoming_red_light_pub.publish(Int32(light_wp))
+        else:
+            self.upcoming_red_light_pub.publish(Int32(self.last_wp))
+        self.state_count += 1
+
 
     def get_closest_waypoint(self, x, y):
         """Identifies the closest path waypoint to the given position
@@ -170,7 +175,7 @@ class TLDetector(object):
                     self.light_wp_idx = temp_wp_idx
         return distance
 
-    def process_traffic_lights(self):
+    def process_traffic_lights(self, distance):
         """Finds closest visible traffic light, if one exists, and determines its
             location and color
 
@@ -184,7 +189,7 @@ class TLDetector(object):
 
         #TODO find the closest visible traffic light (if one exists)
         # distance = check_traffic_lights_distance()
-        if self.closest_light:
+        if self.closest_light and distance < 200:
             state = self.get_light_state(self.closest_light)
             return self.light_wp_idx, state
         # self.waypoints = None
