@@ -27,6 +27,15 @@ class TLDetector(object):
         self.image_count = 0
         self.lights = []
 
+        self.state = TrafficLight.UNKNOWN
+        self.last_state = TrafficLight.UNKNOWN
+        self.last_wp = -1
+        self.state_count = 0
+        self.save_image = False
+        self.closest_light = None
+        self.light_wp_idx = None
+        self.has_image = False
+
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
@@ -49,27 +58,18 @@ class TLDetector(object):
         self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
-        self.state = TrafficLight.UNKNOWN
-        self.last_state = TrafficLight.UNKNOWN
-        self.last_wp = -1
-        self.state_count = 0
-        self.save_image = False
-        self.closest_light = None
-        self.light_wp_idx = None
-        self.has_image = False
-
         # rospy.spin()
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(30)
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             distance = self.check_traffic_lights_distance()
-            rospy.loginfo("light-car distance: {0}".format(distance))
+            rospy.loginfo("light-car distance: {0}, {1}, {2}".format(distance, self.has_image, self.image_count))
             if distance < 200:
                 self.save_image = True
-                if not self.has_image or self.image_count % 4 != 0:
-                    continue
+                # if not self.has_image or self.image_count % 2 != 0:
+                #     continue
                 light_wp, state = self.process_traffic_lights()
                 '''
                 Publish upcoming red lights at camera frequency.
@@ -153,7 +153,7 @@ class TLDetector(object):
         """
         # For testing, just return the light state
         rospy.loginfo("light state: {0}".format(light.state))
-        return light.state
+        # return light.state
 
 
         if(not self.has_image):
