@@ -82,7 +82,7 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
-        every_image = 3
+        every_image = 1
         self.image_count += 1
 
         distance = self.check_traffic_lights_distance()
