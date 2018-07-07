@@ -1,3 +1,55 @@
+# Capstone
+
+---
+
+For this project, most of the code I referenced Walkthrough. Then I made some modifications based on this. I didn't do more in-depth experiments because of computer performance.
+
+## 1. Output Video
+
+This video comes from my local computer. For performance reasons, only the traffic light state provided by the simulator is used, and the classifier is not used when recoding. Processing failed at one traffic light after loading the classifier in Workspace.
+
+[![Watch the video](./writeup_res/capstone.png)](https://youtu.be/lBErd-xCmdY)
+
+## 2. Latency
+
+In order to run this program on my laptop without GPU, I spent a lot of time processing the latency, although it still can't run after loading the classifier, but it can solve most problems. Below are a lot of solutions I found in the forums and Slack. To combine these, the car runs smoothly after the Camera is turned on in the simulator and the classifier is turned off.
+
+1. [Skip some camera data publish](https://carnd.slack.com/archives/C6NVDVAQ3/p1506846710000025?thread_ts=1506794739.000078&cid=C6NVDVAQ3
+).
+2. [Performance Issue on VM](https://github.com/jdleesmiller/CarND-Capstone/commit/33dae9248a73feab9b577dd135116b6575e85788).
+
+3. A letency [summary](https://discussions.udacity.com/t/tip-rate-limiting-to-fix-high-vm-cpu-control-latency-off-road-driving/443576).
+
+4. Decrease LOOKAHEAD_WPS to 100 and WaypointUpdater loop rate to 10.
+
+5. Start processing images when the traffic light is approaching.
+
+6. Close all other programs.
+
+## 3. Setup
+
+I use window10, VirtualBox for ubuntu. Below is my configuration.
+
+### 3.1. Virtual Box Configuration
+
+<p align="center">
+<img src="./writeup_res/vm.png" height="80%" width="80%" alt="image" />
+</p>
+
+### 3.2. Windows 10 Setup
+
+1. "command prompt" runs as administrator.
+2. Input this command: "netsh interface portproxy add v4tov4 listenport=4567 listenaddress=127.0.0.1 connectport=4567 connectaddress=192.168.56.102 protocol=tcp".
+
+## 4. Traffic Light Classification
+
+I use SSD Inception V2 model, mainly refer to this [document](https://github.com/alex-lechner/Traffic-Light-Classification/blob/f436da70fc9de10da80168f8efbb524c01da5c47/README.md#training) for the classifier.
+
+
+---
+
+# Project
+
 This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
 
 Please use **one** of the two installation options, either native **or** docker installation.
